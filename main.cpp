@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-
+#include <algorithm>
 
 class JSONReader 
 {
@@ -100,7 +100,7 @@ public:
 
                 // The line contains first level key only if there are "" + all previous opening brakets were closed
                 if(containsDoubleQuotedWords(line) && count_open_braket == 0){
-                    keys.emplace_back(line);
+                    keys.emplace_back(extractWordInQuotes(line));
                     std::cout << extractWordInQuotes(line) << std::endl;   
                 }
 
@@ -113,6 +113,21 @@ public:
 
             }
         }
+    }
+
+    // Operator to access elements by index
+    std::string operator[](std::string key_) const {
+        
+        // Check if the passing key exists
+        if (std::find(keys.begin(), keys.end(), key_) != keys.end())
+        {
+            std::cout << "The key " << key_ << " exists!" << std::endl;
+        }
+        else
+        {
+            std::cout << "The key doesn't exits! " << std::endl;
+        }
+        return key_;
     }
 
 
@@ -131,5 +146,7 @@ int main() {
     int level = 1;
     reader.PrintHierarchy(level);
 
+
+    reader["two"];
 
 }
