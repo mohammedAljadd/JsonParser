@@ -1,48 +1,39 @@
 #pragma once
-
-
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
 #include <algorithm>
-
+#include <set>
 
 class JSONReader 
 {
 
-public:
+    private:
 
-    // Lines in the json file
-    std::vector<std::string> jsonLines;
-
-    // Keys
-    mutable std::vector<std::string> keys;
-
-    // Constructor
-    JSONReader(const std::string& filename);
-
+        mutable std::vector<std::string> keys;
+        std::vector <int> keys_indexes;
+        std::map<std::string, std::string> data;
+        std::vector<std::string> jsonLines;
+        std::map<std::string, int> keyWord_keyIndex;
     
-    // Check if a line contains double quotes
-    bool containsDoubleQuotedWords(const std::string& line) const;
 
-    // return 0 if line contains {, 1 for }, otherwise -1
-    int containsBraket(const std::string& line) const;
+    public:
 
+        // constructor
+        JSONReader();
+           
+        // Load lines and find first level keys
+        bool load_lines(std::string);
 
-    // Reading the json file
-    bool ReadFile();
+        // Get keys
+        std::set<std::string> get_keys() const;
 
-    // Extract key from a line
-    std::string extractWordInQuotes(const std::string& line) const;
-
-    // Print hierarchy
-    void PrintHierarchy(int& level) const;
-
-    // Operator to access elements by index
-    std::string operator[](std::string key_) const ;
+        // Operator to access data via keys
+        JSONReader operator[](std::string key) const;
 
 
-private:
-    // Path to the json file
-    std::string filename;
+    private:
+        // Path to the json file
+        std::string filename;
 };

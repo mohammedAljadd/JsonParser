@@ -4,46 +4,15 @@
 #include <vector>
 #include <algorithm>
 #include "JSONReader.h"
-
+#include "Utils.h"
    
 // Constructor
-JSONReader::JSONReader(const std::string& filename) : filename(filename) {}
+JSONReader::JSONReader() {}
 
-
-// Check if a line contains double quotes
-bool JSONReader::containsDoubleQuotedWords(const std::string& line) const{
-    bool inQuotes = false;
-
-    for (char c : line) {
-        if (c == '"') {
-            inQuotes = !inQuotes;
-        } else if (!inQuotes && std::isspace(c)) {
-            // If not inside quotes and encountered whitespace, reset inQuotes flag
-            inQuotes = false;
-        } else if (!inQuotes && !std::isspace(c)) {
-            // If not inside quotes and encountered non-whitespace, return true
-            return true;
-        }
-    }
-
-    return false;
-}
-
-// return 0 if line contains {, 1 for }, otherwise -1
-int JSONReader::containsBraket(const std::string& line) const {
-    for (char c : line) {
-        if (c == '{') {
-            return 0; // Return 0 if an opening curly brace is found
-        } else if (c == '}') {
-            return 1; // Return 1 if a closing curly brace is found
-        }
-    }
-    return -1; // Return -1 if neither brace is found
-}
 
 
 // Reading the json file
-bool JSONReader::ReadFile() 
+bool JSONReader::load_lines(std::string filename)
 {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -62,63 +31,117 @@ bool JSONReader::ReadFile()
     }
 
     file.close();
+    std::cout << "The file is read successfully" << std::endl;
+
+
+    // Find first level keys
+    int count_open_braket = 0;
+    for (int i = 0; i < jsonLines.size(); ++i) {
+        auto& line = jsonLines[i];
+
+
+        // The line contains first level key only if there are "" + all previous opening brakets were closed
+        if (containsDoubleQuotedWords(line) && count_open_braket == 0) {
+            keys.emplace_back(extractWordInQuotes(line));
+            keys_indexes.emplace_back(i);
+            keyWord_keyIndex[extractWordInQuotes(line)] = i;
+           // std::cout << extractWordInQuotes(line) << std::endl;
+        }
+
+        if (containsBraket(line) == 0) {
+            count_open_braket += 1;
+        }
+        else if (containsBraket(line) == 1) {
+            count_open_braket -= 1;
+        }
+
+    }
+
     return true;
 }
 
-// Extract key from a line
-std::string JSONReader::extractWordInQuotes(const std::string& line) const{
-    size_t startPos = line.find('"');
-    if (startPos == std::string::npos) {
-        // No opening quote found
-        return "";
-    }
 
-    size_t endPos = line.find('"', startPos + 1);
-    if (endPos == std::string::npos) {
-        // No closing quote found
-        return "";
-    }
 
-    return line.substr(startPos + 1, endPos - startPos - 1);
+// Get keys
+std::set<std::string> JSONReader::get_keys() const
+{
+    std::set<std::string> keys_set;
+    std::cout << "The keys are : " << std::endl;
+    for (auto& key : keys) {
+        std::cout << key << std::endl;
+        keys_set.insert(key);
     }
+    return keys_set;
+}
 
-// Print hierarchy
-void JSONReader::PrintHierarchy(int& level) const{
-    if(level == 1){
+
+
+
+// Operator [] overloading to access elements
+JSONReader JSONReader::operator[](std::string key_) const {
+
+    // Check if the passing key exists, keys contains strings
+    auto it = std::find(keys.begin(), keys.end(), key_);
+
+    if (it != keys.end())
+    {
+
+        // keyWord_keyIndex
+        size_t index = std::distance(keys.begin(), it);
+        auto it = keyWord_keyIndex.find(key_);
+        int nextIndex = -1;
+        if (it != keyWord_keyIndex.end()) {
+            // Current key found
+            ++it; // Move to the next element
+            if (it != keyWord_keyIndex.end()) {
+                // Next key found
+                nextIndex = it->second;
+            }
+        }
+
+        std::cout << nextIndex << std::endl;
+
+        JSONReader new_reader = JSONReader();
+
+        // Loop from index to next_index
+        std::cout << "Hna : " << std::endl;
+        for (auto i = index+1; i < nextIndex; i++) {
+            std::cout << this->jsonLines[i] << "  ----  " << std::endl;
+            new_reader.jsonLines.emplace_back(this->jsonLines[i]);
+        }
+
+        // Get new keys :
+
         int count_open_braket = 0;
-        for(auto& line : jsonLines){
-            // Check if the first level key is in line
+        for (int i = 0; i < new_reader.jsonLines.size(); ++i) {
+            auto& line = new_reader.jsonLines[i];
+
 
             // The line contains first level key only if there are "" + all previous opening brakets were closed
-            if(containsDoubleQuotedWords(line) && count_open_braket == 0){
-                keys.emplace_back(extractWordInQuotes(line));
-                std::cout << extractWordInQuotes(line) << std::endl;   
+            if (containsDoubleQuotedWords(line) && count_open_braket == 0) {
+                new_reader.keys.emplace_back(extractWordInQuotes(line));
+                new_reader.keys_indexes.emplace_back(i);
+                new_reader.keyWord_keyIndex[extractWordInQuotes(line)] = i;
+                // std::cout << extractWordInQuotes(line) << std::endl;
             }
 
-            if(containsBraket(line) == 0){
+            if (containsBraket(line) == 0) {
                 count_open_braket += 1;
             }
-            else if(containsBraket(line) == 1){
+            else if (containsBraket(line) == 1) {
                 count_open_braket -= 1;
             }
 
         }
-    }
-}
+     
 
-// Operator to access elements by index
-std::string JSONReader::operator[](std::string key_) const {
-    
-    // Check if the passing key exists
-    if (std::find(keys.begin(), keys.end(), key_) != keys.end())
-    {
-        std::cout << "The key " << key_ << " exists!" << std::endl;
+        //std::cout << "The key " << key_ << " exists!" << std::endl;
+        return new_reader;
     }
     else
     {
-        std::cout << "The key doesn't exits! " << std::endl;
+        //std::cout << "The key doesn't exits! " << std::endl;
+        return *this;
     }
-    return key_;
+
 }
-
-
