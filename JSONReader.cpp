@@ -58,7 +58,7 @@ bool JSONReader::load(std::string filename)
                 }
 
                 else if (containsBraket(line) == -1) {
-                    keyValueStore[currentKey] = line;
+                    keyValueStore[currentKey] = extractValueKeyNoBraket(line);
                 }
             }
 
@@ -104,7 +104,7 @@ std::set<std::string> JSONReader::get_keys() const
     std::cout << "The keys are : " << std::endl;
     for (const auto& pair : keyValueStore){
         keys_set.insert(pair.first);
-        std::cout << pair.first << std::endl;
+        std::cout << pair.first << " " << pair.second << std::endl;
     }
     
     return keys_set;

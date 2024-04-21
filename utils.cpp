@@ -25,15 +25,18 @@ bool containsDoubleQuotedWords(const std::string& line) {
 
 // return 0 if line contains {, 1 for }, otherwise -1
 int containsBraket(const std::string& line) {
+    int value = -1;
     for (char c : line) {
         if (c == '{') {
-            return 0; // Return 0 if an opening curly brace is found
+            value = 0; // Return 0 if an opening curly brace is found
+            break;
         }
         else if (c == '}') {
-            return 1; // Return 1 if a closing curly brace is found
+            value = 1; // Return 1 if a closing curly brace is found
+            break;
         }
     }
-    return -1; // Return -1 if neither brace is found
+    return value; // Return -1 if neither brace is found
 }
 
 // Extract key from a line
@@ -51,4 +54,26 @@ std::string extractWordInQuotes(const std::string& line) {
     }
 
     return line.substr(startPos + 1, endPos - startPos - 1);
+}
+
+
+
+std::string trim(const std::string& str) {
+    size_t first = str.find_first_not_of(" \t\r\n");
+    size_t last = str.find_last_not_of(" \t\r\n");
+    return str.substr(first, last - first + 1);
+}
+
+
+
+std::string extractValueKeyNoBraket(const std::string& input) {
+    size_t startPos = input.find('":'); // Find the first double quote
+    if (startPos == std::string::npos)
+        return ""; // Return empty string if opening quote not found
+
+    size_t endPos = input.find(',', startPos + 1); // Find the next double quote
+    if (endPos == std::string::npos)
+        return ""; // Return empty string if closing quote not found
+
+    return input.substr(startPos + 1, endPos - startPos - 1); // Extract substring between the quotes
 }
