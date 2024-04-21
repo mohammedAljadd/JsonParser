@@ -56,6 +56,10 @@ bool JSONReader::load(std::string filename)
                 if (containsBraket(line) == 0) {
                     count_open_braket += 1;
                 }
+
+                else if (containsBraket(line) == -1) {
+                    keyValueStore[currentKey] = line;
+                }
             }
 
             // Key not found yet --> add the current line to currentValue
@@ -83,13 +87,10 @@ bool JSONReader::load(std::string filename)
         } 
         
 
-        for (const auto& pair : keyValueStore)
-            {
-                std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-            }
+        
 
         file.close();
-        //std::cout << "The file is read successfully" << std::endl;
+        std::cout << "The file is read successfully" << std::endl;
 
         return true;
     }
@@ -101,10 +102,11 @@ std::set<std::string> JSONReader::get_keys() const
 {
     std::set<std::string> keys_set;
     std::cout << "The keys are : " << std::endl;
-    for (auto& key : keys) {
-        std::cout << key << std::endl;
-        keys_set.insert(key);
+    for (const auto& pair : keyValueStore){
+        keys_set.insert(pair.first);
+        std::cout << pair.first << std::endl;
     }
+    
     return keys_set;
 }
 
