@@ -16,6 +16,7 @@ class JSONReader
         std::map<std::string, std::string> data;
         std::vector<std::string> jsonLines;
         std::map<std::string, int> keyWord_keyIndex;
+        std::map<std::string, std::string> keyValueStore;
     
 
     public:
@@ -24,7 +25,7 @@ class JSONReader
         JSONReader();
            
         // Load lines and find first level keys
-        bool load_lines(std::string);
+        bool load(std::string);
 
         // Get keys
         std::set<std::string> get_keys() const;
