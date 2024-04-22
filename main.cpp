@@ -1,21 +1,23 @@
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <algorithm>
 #include "JSONReader.h"
 
 int main() {
-    // Example usage
-    JSONReader reader("example.json");
-    if (reader.ReadFile()) {
-        std::cout << "File read successfully." << std::endl;
+
    
-    }
-    int level = 1;
-    reader.PrintHierarchy(level);
+    JSONReader reader = JSONReader();
+
+    // Load lines
+    reader.load("example.json");
+
+    
+
+    JSONReader new_reader = reader["one"];
+       
+    std::cout << "New reader : \n\n" << std::endl;
+    new_reader.get_keys();
 
 
-    reader["two"];
+    std::cin.get();
+
 
 }

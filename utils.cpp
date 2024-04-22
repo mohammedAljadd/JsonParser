@@ -19,7 +19,6 @@ bool containsDoubleQuotedWords(const std::string& line) {
             return true;
         }
     }
-
     return false;
 }
 
@@ -71,9 +70,28 @@ std::string extractValueKeyNoBraket(const std::string& input) {
     if (startPos == std::string::npos)
         return ""; // Return empty string if opening quote not found
 
-    size_t endPos = input.find(',', startPos + 1); // Find the next double quote
+    size_t endPos = input.find(',', startPos + 1); // Find the next comma after startPos
     if (endPos == std::string::npos)
-        return ""; // Return empty string if closing quote not found
+        endPos = input.size(); // If no comma found, set endPos to end of string
 
     return input.substr(startPos + 1, endPos - startPos - 1); // Extract substring between the quotes
+}
+
+
+
+
+// Split a string (contains multiple "\n") into lines
+std::vector<std::string> splitStringIntoLines(const std::string& input) {
+    std::string currentLine = "";
+    std::vector<std::string> lines;
+    for (const char& c : input) {
+        if (c != '\n') {
+            currentLine += c;
+        }
+        else {
+            lines.emplace_back(currentLine);
+            currentLine = "";
+        }
+    }
+    return lines;
 }

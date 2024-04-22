@@ -11,11 +11,6 @@ class JSONReader
 
     private:
 
-        mutable std::vector<std::string> keys;
-        std::vector <int> keys_indexes;
-        std::map<std::string, std::string> data;
-        std::vector<std::string> jsonLines;
-        std::map<std::string, int> keyWord_keyIndex;
         std::map<std::string, std::string> keyValueStore;
     
 

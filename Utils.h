@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include <cctype>
 
 std::string trim(const std::string& str);
@@ -17,3 +18,8 @@ std::string extractWordInQuotes(const std::string& line);
 
 // Extract value from a line that contains a key but no brakets, like : "MyKey": 15
 std::string extractValueKeyNoBraket(const std::string& input);
+
+
+
+// Split a string (contains multiple "\n") into lines
+std::vector<std::string> splitStringIntoLines(const std::string& input);

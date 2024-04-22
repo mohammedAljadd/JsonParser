@@ -52,7 +52,7 @@ bool JSONReader::load(std::string filename)
             if (containsDoubleQuotedWords(line) && count_open_braket == 0) 
             {
                 currentKey = extractWordInQuotes(line);
-                currentValue = ""; // reset the current value
+                currentValue = "{\n"; // reset the current value
                 if (containsBraket(line) == 0) {
                     count_open_braket += 1;
                 }
@@ -60,6 +60,7 @@ bool JSONReader::load(std::string filename)
                 else if (containsBraket(line) == -1) {
                     keyValueStore[currentKey] = extractValueKeyNoBraket(line);
                 }
+
             }
 
             // Key not found yet --> add the current line to currentValue
@@ -76,11 +77,11 @@ bool JSONReader::load(std::string filename)
                     count_open_braket -= 1;
                 }
                 if (count_open_braket == 0) { // if we've reached the end of the value
-                    keyValueStore[currentKey] = currentValue;
+                    keyValueStore[currentKey] = currentValue+ "}\n";
                     currentValue = ""; // reset the current value
                 }
                 else {
-                    currentValue += line ; // concatenate the trimmed line to the current value
+                    currentValue = currentValue + line + "\n"; // concatenate the trimmed line to the current value
                 }
             }
             
@@ -101,10 +102,9 @@ bool JSONReader::load(std::string filename)
 std::set<std::string> JSONReader::get_keys() const
 {
     std::set<std::string> keys_set;
-    std::cout << "The keys are : " << std::endl;
     for (const auto& pair : keyValueStore){
         keys_set.insert(pair.first);
-        std::cout << pair.first << " " << pair.second << std::endl;
+        std::cout << "Key : " << pair.first << " : " << "\nValues:" << pair.second << std::endl;
     }
     
     return keys_set;
@@ -115,48 +115,73 @@ std::set<std::string> JSONReader::get_keys() const
 
 // Operator [] overloading to access elements
 JSONReader JSONReader::operator[](std::string key_) const {
-    auto it = std::find(keys.begin(), keys.end(), key_);
-    if (it != keys.end()) {
-        size_t index = std::distance(keys.begin(), it);
-        int nextIndex = -1;
-        auto it2 = keyWord_keyIndex.find(key_);
-        if (it2 != keyWord_keyIndex.end()) {
-            ++it2; // Move to the next element
-            if (it2 != keyWord_keyIndex.end()) {
-                nextIndex = it2->second;
-            }
-        }
+    if (keyValueStore.find(key_) != keyValueStore.end()) {
+        std::string Values = keyValueStore.at(key_);
 
-        JSONReader new_reader;
-        for (auto i = index + 1; i < nextIndex; i++) {
-            new_reader.jsonLines.emplace_back(this->jsonLines[i]);
-        }
+        JSONReader new_reader = JSONReader();
+        std::vector<std::string> lines = splitStringIntoLines(Values);
 
-        // Update keys, keys_indexes, and keyWord_keyIndex members
-        new_reader.keys.clear();
-        new_reader.keys_indexes.clear();
-        new_reader.keyWord_keyIndex.clear();
-
+        // Find keys and values and store them in new_reader.keyValueStore
+        bool skipFirstLine = true;
         int count_open_braket = 0;
-        for (int i = 0; i < new_reader.jsonLines.size(); ++i) {
-            auto& line = new_reader.jsonLines[i];
-            if (containsDoubleQuotedWords(line) && count_open_braket == 0) {
-                new_reader.keys.emplace_back(extractWordInQuotes(line));
-                new_reader.keys_indexes.emplace_back(i);
-                new_reader.keyWord_keyIndex[extractWordInQuotes(line)] = i;
+        std::string currentKey;
+        std::string currentValue = "";
+
+        for (std::string& line : lines) {
+            std::cout << line << std::endl;
+            if (skipFirstLine)
+            {
+                skipFirstLine = false;
+                continue; // skip the first line that contains the {
+            }
+            
+
+            // Key is fonund
+            if (containsDoubleQuotedWords(line) && count_open_braket == 0)
+            {
+                
+                currentKey = extractWordInQuotes(line);
+                currentValue = "{\n"; // reset the current value
+                if (containsBraket(line) == 0) {
+                    count_open_braket += 1;
+                }
+
+                else if (containsBraket(line) == -1) {
+                    new_reader.keyValueStore[currentKey] = extractValueKeyNoBraket(line);
+                }
+                
             }
 
-            if (containsBraket(line) == 0) {
-                count_open_braket += 1;
-            }
-            else if (containsBraket(line) == 1) {
-                count_open_braket -= 1;
+            // Key not found yet --> add the current line to currentValue
+            else {
+
+
+                if (containsBraket(line) == 0)
+                {
+                    count_open_braket += 1;
+                }
+
+                else if (containsBraket(line) == 1)
+                {
+                    count_open_braket -= 1;
+                }
+                if (count_open_braket == 0) { // if we've reached the end of the value
+                    new_reader.keyValueStore[currentKey] = currentValue + "}\n";
+                    currentValue = ""; // reset the current value
+                }
+                else {
+                    currentValue = currentValue + line + "\n"; // concatenate the trimmed line to the current value
+                }
             }
         }
+
+
 
         return new_reader;
+
     }
     else {
-        return *this;
+        std::cout << "The key doesn't exists!" << std::endl;
+        return *(this);
     }
 }
