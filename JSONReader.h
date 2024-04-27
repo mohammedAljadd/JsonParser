@@ -28,6 +28,9 @@ class JSONReader
         // Operator to access data via keys
         JSONReader operator[](std::string key) const;
 
+        // Save json file
+        void save(std::string filename) const;
+
 
     private:
         // Path to the json file

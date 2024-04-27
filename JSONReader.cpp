@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
 #include "JSONReader.h"
 #include "Utils.h"
    
@@ -192,4 +194,36 @@ JSONReader JSONReader::operator[](std::string key_) const {
         std::cout << "The key doesn't exists!" << std::endl;
         return *(this);
     }
+}
+
+
+// Save json file
+void JSONReader::save( std::string filename) const {
+
+
+    // result string that will be stored in json
+    std::string result = "{\n";
+    
+    // loop through keys and values
+    int counter = 1;
+    for (const auto& pair : keyValueStore) {
+        result = result + '"' + pair.first + '"' + ":\n";
+        result = result + pair.second;
+        if (counter < keyValueStore.size()) {
+            result += ",\n";
+        }
+        else {
+            result += "\n";
+        }
+        counter++;
+    }
+    result += "\n}";
+
+    std::ofstream outputFile(filename);
+
+    outputFile << result;
+
+    // Close the file
+    outputFile.close();
+
 }
