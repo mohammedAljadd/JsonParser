@@ -104,7 +104,7 @@ std::set<std::string> JSONReader::get_keys() const
     std::set<std::string> keys_set;
     for (const auto& pair : keyValueStore){
         keys_set.insert(pair.first);
-        std::cout << "Key : " << pair.first << " : " << "\nValues:" << pair.second << std::endl;
+        std::cout << "Key : " << pair.first << "\n" << "\nValue:" << pair.second << std::endl;
     }
     
     return keys_set;
@@ -121,6 +121,8 @@ JSONReader JSONReader::operator[](std::string key_) const {
         JSONReader new_reader = JSONReader();
         std::vector<std::string> lines = splitStringIntoLines(Values);
 
+
+
         // Find keys and values and store them in new_reader.keyValueStore
         bool skipFirstLine = true;
         int count_open_braket = 0;
@@ -128,54 +130,60 @@ JSONReader JSONReader::operator[](std::string key_) const {
         std::string currentValue = "";
 
         for (std::string& line : lines) {
-            std::cout << line << std::endl;
-            if (skipFirstLine)
-            {
-                skipFirstLine = false;
-                continue; // skip the first line that contains the {
+
+            // Check if lines size = 1
+            if (lines.size() == 1) {
+                new_reader.keyValueStore[key_] = line;
+                return new_reader;
             }
-            
-
-            // Key is fonund
-            if (containsDoubleQuotedWords(line) && count_open_braket == 0)
-            {
-                
-                currentKey = extractWordInQuotes(line);
-                currentValue = "{\n"; // reset the current value
-                if (containsBraket(line) == 0) {
-                    count_open_braket += 1;
-                }
-
-                else if (containsBraket(line) == -1) {
-                    new_reader.keyValueStore[currentKey] = extractValueKeyNoBraket(line);
-                }
-                
-            }
-
-            // Key not found yet --> add the current line to currentValue
             else {
 
-
-                if (containsBraket(line) == 0)
+                if (skipFirstLine)
                 {
-                    count_open_braket += 1;
+                    skipFirstLine = false;
+                    continue; // skip the first line that contains the {
+                }
+            
+                std::cout << line << std::endl;
+                // Key is fonund
+                if (containsDoubleQuotedWords(line) && count_open_braket == 0)
+                {
+                    currentKey = extractWordInQuotes(line);
+                    currentValue = "{\n"; // reset the current value
+                    if (containsBraket(line) == 0) {
+                        count_open_braket += 1;
+                    }
+
+                    else if (containsBraket(line) == -1) {
+                        new_reader.keyValueStore[currentKey] = extractValueKeyNoBraket(line);
+                    }
+                
                 }
 
-                else if (containsBraket(line) == 1)
-                {
-                    count_open_braket -= 1;
-                }
-                if (count_open_braket == 0) { // if we've reached the end of the value
-                    new_reader.keyValueStore[currentKey] = currentValue + "}\n";
-                    currentValue = ""; // reset the current value
-                }
+                // Key not found yet --> add the current line to currentValue
                 else {
-                    currentValue = currentValue + line + "\n"; // concatenate the trimmed line to the current value
+
+
+                    if (containsBraket(line) == 0)
+                    {
+                        count_open_braket += 1;
+                    }
+
+                    else if (containsBraket(line) == 1)
+                    {
+                        count_open_braket -= 1;
+                    }
+                    if (count_open_braket == 0) { // if we've reached the end of the value
+                        new_reader.keyValueStore[currentKey] = currentValue + "}\n";
+                        currentValue = ""; // reset the current value
+                    }
+                    else {
+                        currentValue = currentValue + line + "\n"; // concatenate the trimmed line to the current value
+                    }
                 }
             }
+
         }
-
-
 
         return new_reader;
 

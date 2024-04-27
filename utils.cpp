@@ -84,14 +84,20 @@ std::string extractValueKeyNoBraket(const std::string& input) {
 std::vector<std::string> splitStringIntoLines(const std::string& input) {
     std::string currentLine = "";
     std::vector<std::string> lines;
+    int i = 1;
     for (const char& c : input) {
-        if (c != '\n') {
-            currentLine += c;
-        }
-        else {
+        
+        if(c == '\n') {
             lines.emplace_back(currentLine);
             currentLine = "";
         }
+        else if (i == input.length()) {
+            lines.emplace_back(currentLine + c);
+        }
+        else {
+            currentLine += c;
+        }
+        i++;
     }
     return lines;
 }
